@@ -86,13 +86,11 @@ function highlight_selection(doc) {
         var sides = full_text.split(selected);
 
         // replace original with annotated nodes
-        var before = doc.createTextNode(sides[0]);
-        var parent = text_node.parentNode;
-        parent.replaceChild(before, text_node);
+        text_node.data = sides[0];
         var span = create_highlight_span(doc);
         span.appendChild(doc.createTextNode(selected));
-        parent.insertBefore(span, before.nextSibling);
-        parent.insertBefore(doc.createTextNode(sides[1]), span.nextSibling);
+        text_node.parentNode.insertBefore(span, text_node.nextSibling);
+        text_node.parentNode.insertBefore(doc.createTextNode(sides[1]), span.nextSibling);
     } else {
         console.info('cross node mode');
         // find lowest common ancestor

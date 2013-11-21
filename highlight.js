@@ -1,3 +1,10 @@
+/*!
+ * highlight.js
+ * http://github.com/kavinyao/highlight.js
+ *
+ * Copyright 2013, Kavin Yao
+ * Licensed under MIT license.
+ */
 (function(window, undefined) {
 var slice = Array.prototype.slice;
 

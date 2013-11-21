@@ -79,10 +79,14 @@ function highlight_selection(doc) {
     }
 
     if (sel.anchorNode === sel.focusNode) {
-        console.info('single node mode');
+        console.info('Single node mode');
         var text_node = sel.anchorNode;
         var full_text = text_node.data;
-        var selected = full_text.slice(sel.anchorOffset, sel.focusOffset);
+        // use min/max to handle backward selection
+        var selected = full_text.slice(
+            Math.min(sel.anchorOffset, sel.focusOffset),
+            Math.max(sel.anchorOffset, sel.focusOffset)
+        );
         var sides = full_text.split(selected);
 
         // replace original with annotated nodes
@@ -92,19 +96,33 @@ function highlight_selection(doc) {
         text_node.parentNode.insertBefore(span, text_node.nextSibling);
         text_node.parentNode.insertBefore(doc.createTextNode(sides[1]), span.nextSibling);
     } else {
-        console.info('cross node mode');
+        console.info('Cross node mode');
         // find lowest common ancestor
         var traverse_root = sel.anchorNode.parentNode;
         while(!traverse_root.contains(sel.focusNode))
             traverse_root = traverse_root.parentNode;
 
-        //TODO: handle backward selection
+        // determine which is first in DFS
+        // using TreeWalker said to be fast: http://stackoverflow.com/q/2579666/1240620
+        var tree_walker = doc.createTreeWalker(traverse_root, NodeFilter.SHOW_TEXT, null, false);
+        var forward_selection, t_node;
+        while((t_node = tree_walker.nextNode())) {
+            if(t_node === sel.anchorNode || t_node === sel.focusNode) {
+                forward_selection = (t_node === sel.anchorNode);
+                break;
+            }
+        }
+
+        console.info(forward_selection ? 'Forward selection' : 'Backward selection');
+
+        var start_prefix = ['focus', 'anchor'][+forward_selection];
+        var end_prefix = ['focus', 'anchor'][+!forward_selection];
         var config = {
             doc: doc,
-            start: sel.anchorNode,
-            start_offset: sel.anchorOffset,
-            end: sel.focusNode,
-            end_offset: sel.focusOffset,
+            start: sel[start_prefix+'Node'],
+            start_offset: sel[start_prefix+'Offset'],
+            end: sel[end_prefix+'Node'],
+            end_offset: sel[end_prefix+'Offset'],
             in_range: false,
             terminate: false
         };

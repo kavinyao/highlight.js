@@ -86,19 +86,37 @@ function highlight_selection(doc) {
     }
 
     if (sel.anchorNode === sel.focusNode) {
-        console.info('Single node mode');
-        var text_node = sel.anchorNode;
-        var full_text = text_node.data;
-        // use min/max to handle backward selection
-        var left = Math.min(sel.anchorOffset, sel.focusOffset);
-        var right = Math.max(sel.anchorOffset, sel.focusOffset);
+        if(sel.anchorNode.nodeType === sel.anchorNode.TEXT_NODE) {
+            console.info('Single text node mode');
+            var text_node = sel.anchorNode;
+            var full_text = text_node.data;
+            // use min/max to handle backward selection
+            var left = Math.min(sel.anchorOffset, sel.focusOffset);
+            var right = Math.max(sel.anchorOffset, sel.focusOffset);
 
-        // replace original with annotated nodes
-        text_node.data = full_text.substring(0, left);
-        var span = create_highlight_span(doc);
-        span.appendChild(doc.createTextNode(full_text.substring(left, right)));
-        text_node.parentNode.insertBefore(span, text_node.nextSibling);
-        text_node.parentNode.insertBefore(doc.createTextNode(full_text.substring(right)), span.nextSibling);
+            // replace original with annotated nodes
+            text_node.data = full_text.substring(0, left);
+            var span = create_highlight_span(doc);
+            span.appendChild(doc.createTextNode(full_text.substring(left, right)));
+            text_node.parentNode.insertBefore(span, text_node.nextSibling);
+            text_node.parentNode.insertBefore(doc.createTextNode(full_text.substring(right)), span.nextSibling);
+        } else if(sel.anchorNode.nodeType === sel.anchorNode.ELEMENT_NODE) {
+            console.info('Single element node mode');
+            // an element is selected (e.g. by triple clicking in firefox)
+            // should mark all TextNode
+            // trick: always in range and never terminate => mark all
+            var mark_all_config = {
+                doc: doc,
+                start: null,
+                start_offset: 0,
+                end: null,
+                end_offset: 0,
+                in_range: true,
+                terminate: false
+            };
+
+            dfs_mark(sel.anchorNode, mark_all_config);
+        }
     } else {
         console.info('Cross node mode');
         // find lowest common ancestor

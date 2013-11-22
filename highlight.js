@@ -90,18 +90,15 @@ function highlight_selection(doc) {
         var text_node = sel.anchorNode;
         var full_text = text_node.data;
         // use min/max to handle backward selection
-        var selected = full_text.slice(
-            Math.min(sel.anchorOffset, sel.focusOffset),
-            Math.max(sel.anchorOffset, sel.focusOffset)
-        );
-        var sides = full_text.split(selected);
+        var left = Math.min(sel.anchorOffset, sel.focusOffset);
+        var right = Math.max(sel.anchorOffset, sel.focusOffset);
 
         // replace original with annotated nodes
-        text_node.data = sides[0];
+        text_node.data = full_text.substring(0, left);
         var span = create_highlight_span(doc);
-        span.appendChild(doc.createTextNode(selected));
+        span.appendChild(doc.createTextNode(full_text.substring(left, right)));
         text_node.parentNode.insertBefore(span, text_node.nextSibling);
-        text_node.parentNode.insertBefore(doc.createTextNode(sides[1]), span.nextSibling);
+        text_node.parentNode.insertBefore(doc.createTextNode(full_text.substring(right)), span.nextSibling);
     } else {
         console.info('Cross node mode');
         // find lowest common ancestor

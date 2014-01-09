@@ -9,6 +9,45 @@
 var slice = Array.prototype.slice;
 
 /**
+ * Find lowest common ancestor.
+ * complexity: O(height(node1)+height(node2))
+ */
+function find_lca(doc, node1, node2) {
+    var height1 = 1, height2 = 1, diff;
+    var n1 = node1, n2 = node2;
+
+    // get heights of two nodes
+    while(n1.parentNode != doc.body) {
+        height1++;
+        n1 = n1.parentNode;
+    }
+
+    while(n2.parentNode != doc.body) {
+        height2++;
+        n2 = n2.parentNode;
+    }
+
+    // advance the "higher" node by difference
+    // node1 will always be the higher one
+    diff = height1 - height2;
+    if(diff < 0) {
+        diff = -diff;
+        n1 = node1;
+        node1 = node2;
+        node2 = n1;
+    }
+    while(diff-- > 0) node1 = node1.parentNode;
+
+    // advance both nodes simultaneously
+    while(node1.parentNode != node2.parentNode) {
+        node1 = node1.parentNode;
+        node2 = node2.parentNode;
+    }
+
+    return node1.parentNode;
+}
+
+/**
  * Create <span> node which highlights text.
  */
 function create_highlight_span(doc) {
@@ -120,9 +159,8 @@ function highlight_selection(doc) {
     } else {
         console.info('Cross node mode');
         // find lowest common ancestor
-        var traverse_root = sel.anchorNode.parentNode;
-        while(!traverse_root.contains(sel.focusNode))
-            traverse_root = traverse_root.parentNode;
+        // so that we traverse fewest nodes necessary when marking
+        var traverse_root = find_lca(doc, sel.anchorNode, sel.focusNode);
 
         // determine which is first in DFS
         // using TreeWalker said to be fast: http://stackoverflow.com/q/2579666/1240620

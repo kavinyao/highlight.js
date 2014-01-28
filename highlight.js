@@ -7,6 +7,8 @@
  */
 (function(window, undefined) {
 var slice = Array.prototype.slice;
+var DEFAULT_COLOR = '#fae983';
+var gcolor;
 
 /**
  * Find lowest common ancestor.
@@ -53,7 +55,7 @@ function find_lca(doc, node1, node2) {
 function create_highlight_span(doc) {
     var span = doc.createElement('span');
     //TODO: refactor to style
-    span.setAttribute('style', 'background:#fae983;');
+    span.setAttribute('style', 'background:' + gcolor + ';');
     return span;
 }
 
@@ -115,7 +117,7 @@ function dfs_mark(elem, config) {
     }
 }
 
-function highlight_selection(doc) {
+function highlight_selection(doc, color) {
     var sel = doc.getSelection();
 
     // only support highlight within TextNode
@@ -124,7 +126,12 @@ function highlight_selection(doc) {
         return;
     }
 
-    if (sel.anchorNode === sel.focusNode) {
+    // set color
+    if(! color)
+        color = DEFAULT_COLOR;
+    gcolor = color;
+
+    if(sel.anchorNode === sel.focusNode) {
         if(sel.anchorNode.nodeType === sel.anchorNode.TEXT_NODE) {
             console.info('Single text node mode');
             var text_node = sel.anchorNode;
